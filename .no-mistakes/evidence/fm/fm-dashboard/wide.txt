@@ -1,0 +1,31 @@
+⚓ FIRSTMATE  ·  ship's log of the flagship fleet
+1 under sail · 1 in the hold · 4 awaiting the captain · 2 made port
+logged 2026-10-08T12:00:00Z
+
+QUEUED                          IN FLIGHT                       WAITING ON CAPTAIN              DONE
+in the hold (1)                 under sail (1)                  the captain's call (4)          made port (2)
+═══════════════════════════════ ═══════════════════════════════ ═══════════════════════════════ ═══════════════════════════════
+╭─ queued-task ──────────────── ╭─ ship-task ────────────────── ╭─ pr-task ──────────────────── ╭─ new-done ───────────────────
+│ Queued Task                   │ Ship Task                     │ PR Task                       │ New Done
+│ beta · scout · -              │ alpha · ship · direct-PR      │ alpha · ship · no-mistakes    │ alpha · ship · -
+│ awaits ship-task              │ ⚑ working - run-step review   │ ⚑ done - checks green         │ https://github.com/o/r/pull/7
+╰────────────────────────────── ╰────────────────────────────── │ PR ready for review           ╰──────────────────────────────
+                                                                │ https://github.com/o/r/pull/9 ╭─ old-done ───────────────────
+                                                                ╰────────────────────────────── │ Old Done
+                                                                ╭─ paused-task ──────────────── │ alpha · ship · -
+                                                                │ Paused Task                   │ https://github.com/o/r/pull/1
+                                                                │ alpha · ship · direct-PR      ╰──────────────────────────────
+                                                                │ ⚑ paused - awaiting go
+                                                                │ held: needs budget call
+                                                                ╰──────────────────────────────
+                                                                ╭─ ask-task ───────────────────
+                                                                │ ask-task
+                                                                │ gamma · scout · scout
+                                                                │ ⚑ blocked
+                                                                │ decision needed
+                                                                ╰──────────────────────────────
+                                                                ╭─ held-task ──────────────────
+                                                                │ Pick API shape
+                                                                │ beta · ship · -
+                                                                │ held: choose REST or gRPC
+                                                                ╰──────────────────────────────
