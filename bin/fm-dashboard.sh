@@ -68,6 +68,7 @@ RENDER='
   def paint($s): if $color and $s != "" then "\u001b[\($s)m" + . + "\u001b[0m" else . end;
   def rep($n): if $n > 0 then . * $n else "" end;
   def trunc($n): if length <= $n then . elif $n < 2 then .[:$n] else .[:$n-1] + "…" end;
+  def fit($w): reduce .[] as [$t, $s] ({r: [], left: $w}; .r += [[$t[:.left], $s]] | .left = ([.left - ($t | length), 0] | max)) | .r;
   def chunks($n): if length <= $n then [.] else [.[:$n]] + (.[$n:] | chunks($n)) end;
   def dash: if . == null or . == "" then "-" else tostring end;
   def seg($t; $s): [[$t, $s]];
@@ -168,9 +169,9 @@ RENDER='
   | ([$rows - 4 - 4 - (if $wide then 0 else 1 end), 1] | max) as $body
   | ([
       [
-      (seg("⚓ FIRSTMATE"; "1;33") + seg("  ·  ship'"'"'s log of the "; "2") + seg($fleet; "1;37") + seg(" fleet"; "2") | out(0)),
-      (seg("\($cols[1].cards | length) under sail · \($cols[0].cards | length) in the hold · \($cols[2].cards | length) awaiting the captain · \($cols[3].cards | length) made port"; "1") | out(0)),
-      (seg("logged \(.generated // "-")" + (if $once then "" else " · refresh \($interval)s · q to quit" end); "2") | out(0)),
+      (seg("⚓ FIRSTMATE"; "1;33") + seg("  ·  ship'"'"'s log of the "; "2") + seg($fleet; "1;37") + seg(" fleet"; "2") | fit(if $clip then $width else 100000 end) | out(0)),
+      (seg("\($cols[1].cards | length) under sail · \($cols[0].cards | length) in the hold · \($cols[2].cards | length) awaiting the captain · \($cols[3].cards | length) made port"; "1") | fit(if $clip then $width else 100000 end) | out(0)),
+      (seg("logged \(.generated // "-")" + (if $once then "" else " · refresh \($interval)s · q to quit" end); "2") | fit(if $clip then $width else 100000 end) | out(0)),
       ""
     ][],
     (if $wide then
@@ -275,14 +276,18 @@ while :; do
   case "$rows" in ''|*[!0-9]*|0) rows=24 ;; esac
   # shellcheck disable=SC2086  # $offs is four space-separated integers
   set -- $offs
-  out=$(render "$json" "$(term_width)" "$rows" "$focus" "[$1,$2,$3,$4]" true 2>&1 | head -n "$rows")
+  out=$(render "$json" "$(term_width)" "$rows" "$focus" "[$1,$2,$3,$4]" true 2>&1)
   case "${out%%$'\n'*}" in
     *[!0-9\ ]*|'') ;;
     *) offs=${out%%$'\n'*}; out=${out#*$'\n'} ;;
   esac
   draw "$out"
   key=
-  read -rsn1 -t "$((deadline - SECONDS > 0 ? deadline - SECONDS : 1))" key || true
+  if [ -t 0 ]; then
+    read -rsn1 -t "$((deadline - SECONDS > 0 ? deadline - SECONDS : 1))" key || true
+  else
+    sleep 1
+  fi
   if [ "$key" = $'\033' ]; then
     read -rsn2 -t 0.05 rest || rest=
     case "$rest" in '[A') key=k ;; '[B') key=j ;; '[C') key=l ;; '[D') key=h ;; *) key= ;; esac
