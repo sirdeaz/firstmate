@@ -234,15 +234,14 @@ fi
 
 draw() {  # <text>: repaint in place, one terminal row per line, no scroll
   local -a lines
-  local i last
+  local i last buf=$'\033[H'
   mapfile -t lines <<<"$1"
   last=$((${#lines[@]} - 1))
-  printf '\033[H'
   for i in "${!lines[@]}"; do
-    printf '%s\033[K' "${lines[$i]}"
-    [ "$i" -lt "$last" ] && printf '\n'
+    buf+="${lines[$i]}"$'\033[K'
+    [ "$i" -lt "$last" ] && buf+=$'\n'
   done
-  printf '\033[J'
+  printf '%s\033[J' "$buf"
 }
 
 if [ ! -t 1 ]; then
@@ -261,44 +260,81 @@ if [ ! -t 1 ]; then
 fi
 
 # Live terminal: alternate screen, viewport per column, keyboard scrolling.
+# The tty stays unechoed for the whole session so keys typed while the board is
+# busy never print as ^[[C, and the snapshot is fetched in the background so
+# keys keep registering and the board keeps redrawing while it runs.
+saved_tty=$(stty -g 2>/dev/null) || saved_tty=
+[ -n "$saved_tty" ] && stty -echo -icanon 2>/dev/null
+snap_file=$(mktemp "${TMPDIR:-/tmp}/fm-dashboard.XXXXXX") || exit 1
+fetch_pid=''
+cleanup() {
+  [ -n "$fetch_pid" ] && kill "$fetch_pid" 2>/dev/null
+  rm -f "$snap_file"
+  [ -n "$saved_tty" ] && stty "$saved_tty" 2>/dev/null
+  printf '\033[?1049l'
+  tput cnorm 2>/dev/null || true
+}
 tput civis 2>/dev/null || true
 printf '\033[?1049h'
-trap 'printf "\033[?1049l"; tput cnorm 2>/dev/null || true' EXIT
+trap cleanup EXIT
 trap 'exit 0' INT TERM
-trap ':' WINCH
-focus=0 offs="0 0 0 0" json='' deadline=0
-while :; do
-  if [ "$SECONDS" -ge "$deadline" ]; then
-    json=$(snapshot 2>&1) || true
-    deadline=$((SECONDS + INTERVAL))
-  fi
-  rows=$(term_height)
-  case "$rows" in ''|*[!0-9]*|0) rows=24 ;; esac
-  # shellcheck disable=SC2086  # $offs is four space-separated integers
-  set -- $offs
-  out=$(render "$json" "$(term_width)" "$rows" "$focus" "[$1,$2,$3,$4]" true 2>&1)
-  case "${out%%$'\n'*}" in
-    *[!0-9\ ]*|'') ;;
-    *) offs=${out%%$'\n'*}; out=${out#*$'\n'} ;;
-  esac
-  draw "$out"
+dirty=1
+trap 'dirty=1' WINCH
+
+# read_key <timeout>: set key from the tty, mapping arrow escapes to k/j/l/h.
+read_key() {
+  local rest
   key=
-  if [ -t 0 ]; then
-    read -rsn1 -t "$((deadline - SECONDS > 0 ? deadline - SECONDS : 1))" key || true
-  else
-    sleep 1
-  fi
+  if [ -t 0 ]; then read -rsn1 -t "$1" key && [ -n "$key" ] || return 1; else sleep "$1"; return 1; fi
   if [ "$key" = $'\033' ]; then
     read -rsn2 -t 0.05 rest || rest=
     case "$rest" in '[A') key=k ;; '[B') key=j ;; '[C') key=l ;; '[D') key=h ;; *) key= ;; esac
   fi
-  # shellcheck disable=SC2086
-  set -- $offs
-  case "$key" in
-    q|Q) exit 0 ;;
-    j) arr=("$@"); arr[focus]=$((arr[focus] + 1)); offs="${arr[*]}" ;;
-    k) arr=("$@"); [ "${arr[focus]}" -gt 0 ] && arr[focus]=$((arr[focus] - 1)); offs="${arr[*]}" ;;
-    l) [ "$focus" -lt 3 ] && focus=$((focus + 1)) ;;
-    h) [ "$focus" -gt 0 ] && focus=$((focus - 1)) ;;
-  esac
+}
+
+focus=0 offs="0 0 0 0" json='' deadline=0 key=
+while :; do
+  if [ -n "$fetch_pid" ] && ! kill -0 "$fetch_pid" 2>/dev/null; then
+    wait "$fetch_pid" 2>/dev/null
+    fetch_pid=''
+    json=$(<"$snap_file")
+    deadline=$((SECONDS + INTERVAL))
+    dirty=1
+  fi
+  if [ -z "$fetch_pid" ] && [ "$SECONDS" -ge "$deadline" ]; then
+    snapshot >"$snap_file" 2>&1 &
+    fetch_pid=$!
+  fi
+  if [ "$dirty" = 1 ]; then
+    dirty=0
+    rows=$(term_height)
+    case "$rows" in ''|*[!0-9]*|0) rows=24 ;; esac
+    if [ -z "$json" ]; then
+      out=$'\u2693 FIRSTMATE  \u00b7  hoisting the ship'"'"'s log...'
+    else
+      # shellcheck disable=SC2086  # $offs is four space-separated integers
+      set -- $offs
+      out=$(render "$json" "$(term_width)" "$rows" "$focus" "[$1,$2,$3,$4]" true 2>&1)
+      case "${out%%$'\n'*}" in
+        *[!0-9\ ]*|'') ;;
+        *) offs=${out%%$'\n'*}; out=${out#*$'\n'} ;;
+      esac
+    fi
+    draw "$out"
+  fi
+  # Wait for a key, then drain every pending key before the next redraw so a
+  # held key costs one repaint, not one per repeat.
+  read_key 0.25 || continue
+  while :; do
+    # shellcheck disable=SC2086
+    set -- $offs
+    case "$key" in
+      q|Q) exit 0 ;;
+      j) arr=("$@"); arr[focus]=$((arr[focus] + 1)); offs="${arr[*]}"; dirty=1 ;;
+      k) arr=("$@"); [ "${arr[focus]}" -gt 0 ] && arr[focus]=$((arr[focus] - 1)); offs="${arr[*]}"; dirty=1 ;;
+      l) [ "$focus" -lt 3 ] && focus=$((focus + 1)); dirty=1 ;;
+      h) [ "$focus" -gt 0 ] && focus=$((focus - 1)); dirty=1 ;;
+    esac
+    read_key 0.01 || break
+  done
 done
