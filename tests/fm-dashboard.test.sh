@@ -69,6 +69,26 @@ test_narrow_board_stacks_and_places_cards() {
   pass "narrow board stacks columns and files every card in its column"
 }
 
+test_finished_task_with_pr_waits_despite_stale_run_state() {
+  local snap=$TMP_ROOT/stale.json out
+  jq '.tasks += [
+    {"id":"stale-task","kind":"ship","mode":"no-mistakes","project":"alpha",
+     "current_state":{"state":"unknown","detail":"unrecognized run status"},
+     "pr":{"url":"https://github.com/o/r/pull/11"},"hints":{"pending_decision":false},
+     "paths":{"status_log":{"last_event":{"state":"done"}}},"endpoint":{"status":"dead"},
+     "backlog":{"title":"Stale Task","repo":"alpha"}},
+    {"id":"live-task","kind":"ship","mode":"no-mistakes","project":"alpha",
+     "current_state":{"state":"unknown","detail":"unrecognized run status"},
+     "pr":{"url":"https://github.com/o/r/pull/12"},"hints":{"pending_decision":false},
+     "paths":{"status_log":{"last_event":{"state":"done"}}},"endpoint":{"status":"alive"},
+     "backlog":{"title":"Live Task","repo":"alpha"}}]' "$FIXTURE" > "$snap"
+  out=$(COLUMNS=50 "$DASH" --once --snapshot "$snap")
+  assert_equals "WAITING ON CAPTAIN" "$(section_of "$out" "stale-task")" "finished task with a PR waits on the captain"
+  assert_equals "WAITING ON CAPTAIN" "$(section_of "$out" "https://github.com/o/r/pull/11")" "stale-state PR shows its link there"
+  assert_equals "IN FLIGHT" "$(section_of "$out" "live-task")" "task with a live worker stays in flight"
+  pass "finished task with an open PR waits on the captain despite stale run state"
+}
+
 test_done_limit_keeps_most_recent() {
   local out
   out=$(COLUMNS=50 "$DASH" --once --done 1 --snapshot "$FIXTURE")
@@ -177,6 +197,7 @@ test_live_keys_never_echo_during_refresh
 test_live_key_burst_applies_every_step
 test_rows_clip_to_viewport_with_position_marker
 test_narrow_board_stacks_and_places_cards
+test_finished_task_with_pr_waits_despite_stale_run_state
 test_done_limit_keeps_most_recent
 test_live_snapshot_of_empty_home
 test_rejects_bad_interval

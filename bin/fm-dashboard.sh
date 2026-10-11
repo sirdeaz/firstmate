@@ -2,7 +2,8 @@
 # fm-dashboard.sh - read-only nautical kanban dashboard for the terminal.
 #
 # Renders fm-fleet-snapshot.sh --json as four columns: Queued, In flight,
-# Waiting on captain (live captain holds, open worker decisions, and ready PRs),
+# Waiting on captain (live captain holds, open worker decisions, and ready PRs,
+# including finished tasks whose run state is stale),
 # and Done (most recent first).
 # Like fm-fleet-view.sh it never parses fleet state itself, and it never
 # mutates fleet state, steers workers, or merges anything.
@@ -138,12 +139,19 @@ RENDER='
     pr: ($r.pr_url // $r.report_path)
   };
 
+  # A finished task with an open PR waits on the captain, also when its run
+  # state is stale or unrecognized: its latest status line says done and no
+  # worker is alive.
+  def pr_ready: .pr.url != null
+    and (.current_state.state == "done"
+      or (.paths.status_log.last_event.state == "done" and .endpoint.status != "alive"));
+
   (.tasks // []) as $tasks
   | (.backlog.records // []) as $records
   | ($records | map(select(.state != "done" and .captain_actionable == true and (.id // "") != ""))) as $held
   | ($held | map(.id)) as $held_ids
   | ($tasks | map(select(.hints.pending_decision == true
-      or (.current_state.state == "done" and .pr.url != null)
+      or pr_ready
       or (.id as $id | $held_ids | index($id))))) as $task_waits
   | ($task_waits | map(.id)) as $wait_ids
   | ($records | map(select(.state != "done" and .captain_actionable == true and ((.id // "") as $id | $wait_ids | index($id) | not)))) as $holds
@@ -155,7 +163,7 @@ RENDER='
        cards: [$tasks[] | select(.id as $id | $wait_ids | index($id) | not) | task_card(.; null)]},
       {name: "WAITING ON CAPTAIN", motto: "the captain'"'"'s call", style: "35",
        cards: ([$task_waits[] | task_card(.; if .hints.pending_decision == true then "decision needed"
-           elif .current_state.state == "done" and .pr.url != null then "PR ready for review"
+           elif pr_ready then "PR ready for review"
            else "held: " + (.id as $id | $held[] | select(.id == $id) | .hold_reason // "decision") end)]
          + [$holds[] | record_card(.; "held: " + (.hold_reason // "decision"))])},
       {name: "DONE", motto: "made port", style: "33",
