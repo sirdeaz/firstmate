@@ -36,7 +36,7 @@ Keys: up/down or k/j scroll the focused column, left/right or h/l change it, q q
 EOF
 }
 
-ONCE=0 INTERVAL=5 DONE_MAX=6 SNAPSHOT_FILE= ROWS=0 FOCUS=0 SCROLL=0
+ONCE=0 INTERVAL=5 DONE_MAX=6 SNAPSHOT_FILE='' ROWS=0 FOCUS=0 SCROLL=0
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
@@ -266,7 +266,7 @@ printf '\033[?1049h'
 trap 'printf "\033[?1049l"; tput cnorm 2>/dev/null || true' EXIT
 trap 'exit 0' INT TERM
 trap ':' WINCH
-focus=0 offs="0 0 0 0" json= deadline=0
+focus=0 offs="0 0 0 0" json='' deadline=0
 while :; do
   if [ "$SECONDS" -ge "$deadline" ]; then
     json=$(snapshot 2>&1) || true
