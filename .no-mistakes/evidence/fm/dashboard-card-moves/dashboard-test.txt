@@ -1,0 +1,11 @@
+ok - wide board renders header and four side-by-side columns
+ok - live board never echoes keys typed during a refresh and restores the tty
+ok - a burst of held arrow keys applies every step
+ok - live board re-lays out at the new size when the terminal is resized
+ok - live board marks cards that changed column and drops the marker after the timeout
+ok - --rows clips each column to a scrollable viewport with a position marker
+ok - narrow board stacks columns and files every card in its column
+ok - finished task with an open PR waits on the captain despite stale run state
+ok - --done bounds Done to the most recent cards
+ok - dashboard renders a live snapshot of an empty home
+ok - invalid --interval is refused
