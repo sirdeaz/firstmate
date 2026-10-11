@@ -1,0 +1,25 @@
+== narrow 40x20, stdin /dev/null
+⚓ FIRSTMATE  ·  ship's log of the 01M4N
+Q
+0 under sail · 0 in the hold · 0 awaitin
+logged 2026-10-11T14:53:05Z · refresh 1s
+
+[QUEUED] · IN FLIGHT · WAITING ON CAPTA…
+▶ QUEUED
+in the hold (0)
+════════════════════════════════════════
+cards 0 of 0
+  calm waters
+
+
+
+
+
+
+
+
+
+cpu:
+ 0.0 /usr/bin/bash -c source /home/sirdeaz/.claude/shell-snapshots/snapshot-bash-1791730357989-l0o596.sh 2>/dev/null || true && shopt -u extglob 2>/dev/null || true && { \builtin unalias -- 'unsetenv'; \builtin unset -f -- 'unsetenv'; } >/dev/null 2>&1 || true && eval 'cd /home/sirdeaz/.no-mistakes/worktrees/eab5358eb71d/01M4NQ3W93XP4RWKQHQZR37A8J E=/home/sirdeaz/.no-mistakes/evidence/01M4NQ3W93XP4RWKQHQZR37A8J S="tmux -L dashlab2" $S new-session -d -s d -x 40 -y 20 "bin/fm-dashboard.sh --interval 1 </dev/null" sleep 3; { echo "== narrow 40x20, stdin /dev/null"; $S capture-pane -p -t d; echo "cpu:"; ps -eo pcpu,args | grep '"'"'[f]m-dashboard'"'"' | head -3; } | tee $E/narrow.txt $S kill-server' && pwd -P >| /tmp/claude-58bf-cwd
+ 0.0 tmux -L dashlab2 new-session -d -s d -x 40 -y 20 bin/fm-dashboard.sh --interval 1 </dev/null
+ 0.0 bash -c bin/fm-dashboard.sh --interval 1 </dev/null

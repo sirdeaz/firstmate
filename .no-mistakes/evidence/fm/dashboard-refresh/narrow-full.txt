@@ -1,0 +1,21 @@
+== 40x20 full
+M-bM-^ZM-^S FIRSTMATE  M-BM-7  ship's log of the very-$
+l$
+0 under sail M-BM-7 14 in the hold M-BM-7 0 awaiti$
+logged 2026-10-08T12:00:00Z M-BM-7 refresh 1s$
+$
+[QUEUED] M-BM-7 IN FLIGHT M-BM-7 WAITING ON CAPTAM-bM-^@M-&$
+M-bM-^VM-6 QUEUED$
+in the hold (14)$
+M-bM-^UM-^PM-bM-^UM-^PM-bM-^UM-^PM-bM-^UM-^PM-bM-^UM-^PM-bM-
+cards 1-2 of 14 M-bM-^FM-^S$
+M-bM-^UM--M-bM-^TM-^@ q0 M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-
+M-bM-^TM-^B Queued 0$
+M-bM-^TM-^B b M-BM-7 ship M-BM-7 -$
+M-bM-^UM-0M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-bM-^
+M-bM-^UM--M-bM-^TM-^@ q1 M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-
+M-bM-^TM-^B Queued 1$
+M-bM-^TM-^B b M-BM-7 ship M-BM-7 -$
+M-bM-^UM-0M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-bM-^TM-^@M-bM-^
+$
+$

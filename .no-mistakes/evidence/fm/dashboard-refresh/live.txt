@@ -1,0 +1,79 @@
+== frame1
+⚓ FIRSTMATE  ·  ship's log of the h fleet
+0 under sail · 14 in the hold · 0 awaiting the captain · 0 made port
+logged 2026-10-08T12:00:00Z · refresh 1s · q to quit
+
+▶ QUEUED                 IN FLIGHT                WAITING ON CAPTAIN       DONE
+in the hold (14)         under sail (0)           the captain's call (0)   made port (0)
+════════════════════════ ════════════════════════ ════════════════════════ ════════════════════════
+cards 1-4 of 14 ↓        cards 0 of 0             cards 0 of 0             cards 0 of 0
+╭─ q0 ──────────────────   calm waters              calm waters              calm waters
+│ Queued card 0
+│ beta · ship · -
+╰───────────────────────
+╭─ q1 ──────────────────
+│ Queued card 1
+│ beta · ship · -
+╰───────────────────────
+╭─ q2 ──────────────────
+│ Queued card 2
+│ beta · ship · -
+╰───────────────────────
+╭─ q3 ──────────────────
+│ Queued card 3
+│ beta · ship · -
+╰───────────────────────
+== after jjj
+⚓ FIRSTMATE  ·  ship's log of the h fleet
+0 under sail · 14 in the hold · 0 awaiting the captain · 0 made port
+logged 2026-10-08T12:00:00Z · refresh 1s · q to quit
+
+▶ QUEUED                 IN FLIGHT                WAITING ON CAPTAIN       DONE
+in the hold (14)         under sail (0)           the captain's call (0)   made port (0)
+════════════════════════ ════════════════════════ ════════════════════════ ════════════════════════
+cards 4-7 of 14 ↑ ↓      cards 0 of 0             cards 0 of 0             cards 0 of 0
+╭─ q3 ──────────────────   calm waters              calm waters              calm waters
+│ Queued card 3
+│ beta · ship · -
+╰───────────────────────
+╭─ q4 ──────────────────
+│ Queued card 4
+│ beta · ship · -
+╰───────────────────────
+╭─ q5 ──────────────────
+│ Queued card 5
+│ beta · ship · -
+╰───────────────────────
+╭─ q6 ──────────────────
+│ Queued card 6
+│ beta · ship · -
+╰───────────────────────
+== after l
+⚓ FIRSTMATE  ·  ship's log of the h fleet
+0 under sail · 14 in the hold · 0 awaiting the captain · 0 made port
+logged 2026-10-08T12:00:00Z · refresh 1s · q to quit
+
+QUEUED                   ▶ IN FLIGHT              WAITING ON CAPTAIN       DONE
+in the hold (14)         under sail (0)           the captain's call (0)   made port (0)
+════════════════════════ ════════════════════════ ════════════════════════ ════════════════════════
+cards 4-7 of 14 ↑ ↓      cards 0 of 0             cards 0 of 0             cards 0 of 0
+╭─ q3 ──────────────────   calm waters              calm waters              calm waters
+│ Queued card 3
+│ beta · ship · -
+╰───────────────────────
+╭─ q4 ──────────────────
+│ Queued card 4
+│ beta · ship · -
+╰───────────────────────
+╭─ q5 ──────────────────
+│ Queued card 5
+│ beta · ship · -
+╰───────────────────────
+╭─ q6 ──────────────────
+│ Queued card 6
+│ beta · ship · -
+╰───────────────────────
+== scrollback lines
+0
+history after 3 refreshes:
+0
