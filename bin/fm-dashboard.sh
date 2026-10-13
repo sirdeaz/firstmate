@@ -158,11 +158,12 @@ RENDER='
   };
 
   # A finished task with an open PR waits on the captain, also when its run
-  # state is stale or unrecognized: its latest status line says done and no
-  # worker is alive.
+  # state is unrecognized: its latest status line says done and no worker is
+  # alive. A recognized live state (a worker back at work) wins over that line.
   def pr_ready: .pr.url != null
     and (.current_state.state == "done"
-      or (.paths.status_log.last_event.state == "done" and .endpoint.status != "alive"));
+      or ((.current_state.state // "unknown") == "unknown"
+        and .paths.status_log.last_event.state == "done" and .endpoint.status != "alive"));
 
   (.tasks // []) as $tasks
   | (.backlog.records // []) as $records

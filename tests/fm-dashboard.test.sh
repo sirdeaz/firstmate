@@ -89,6 +89,30 @@ test_finished_task_with_pr_waits_despite_stale_run_state() {
   pass "finished task with an open PR waits on the captain despite stale run state"
 }
 
+test_working_again_task_stays_in_flight() {
+  local snap=$TMP_ROOT/again.json out
+  jq '.tasks += [
+    {"id":"again-task","kind":"ship","mode":"direct-PR","project":"alpha",
+     "current_state":{"state":"working","detail":"harness busy"},
+     "pr":{"url":"https://github.com/o/r/pull/21"},"hints":{"pending_decision":false},
+     "paths":{"status_log":{"last_event":{"state":"done"}}},"endpoint":{"status":"unknown"},
+     "backlog":{"title":"Again Task","repo":"alpha"}},
+    {"id":"unknown-task","kind":"ship","mode":"direct-PR","project":"alpha",
+     "current_state":{"state":"unknown","detail":"unrecognized"},
+     "pr":{"url":"https://github.com/o/r/pull/22"},"hints":{"pending_decision":false},
+     "paths":{"status_log":{"last_event":{"state":"done"}}},
+     "backlog":{"title":"Unknown Task","repo":"alpha"}},
+    {"id":"done-task","kind":"ship","mode":"direct-PR","project":"alpha",
+     "current_state":{"state":"done","detail":"finished"},
+     "pr":{"url":"https://github.com/o/r/pull/23"},"hints":{"pending_decision":false},
+     "backlog":{"title":"Done Task","repo":"alpha"}}]' "$FIXTURE" > "$snap"
+  out=$(COLUMNS=50 "$DASH" --once --snapshot "$snap")
+  assert_equals "IN FLIGHT" "$(section_of "$out" "again-task")" "working task with an open PR stays in flight"
+  assert_equals "WAITING ON CAPTAIN" "$(section_of "$out" "unknown-task")" "unknown state with done line and no endpoint waits"
+  assert_equals "WAITING ON CAPTAIN" "$(section_of "$out" "done-task")" "done state with a PR waits"
+  pass "a worker back at work stays in flight while its PR is open"
+}
+
 test_done_limit_keeps_most_recent() {
   local out
   out=$(COLUMNS=50 "$DASH" --once --done 1 --snapshot "$FIXTURE")
@@ -399,6 +423,7 @@ test_live_board_marks_moved_cards_until_they_expire
 test_rows_clip_to_viewport_with_position_marker
 test_narrow_board_stacks_and_places_cards
 test_finished_task_with_pr_waits_despite_stale_run_state
+test_working_again_task_stays_in_flight
 test_done_limit_keeps_most_recent
 test_live_snapshot_of_empty_home
 test_rejects_bad_interval
