@@ -88,6 +88,10 @@ RENDER='
   def chunks($n): if length <= $n then [.] else [.[:$n]] + (.[$n:] | chunks($n)) end;
   def dash: if . == null or . == "" then "-" else tostring end;
   def seg($t; $s): [[$t, $s]];
+  # Keep the tail (repo name) of a path visible: elide from the left.
+  def ltrunc($n): if length <= $n then . elif $n < 2 then .[-$n:] else "…" + .[-($n-1):] end;
+  def tilde: (env.HOME // "") as $h
+    | if $h != "" and (startswith($h + "/") or . == $h) then "~" + .[($h | length):] else . end;
   # A rendered line is a list of [text, style] segments padded to width $w.
   def out($w): (map(.[0] | length) | add // 0) as $v
     | (map(. as [$t, $s] | $t | paint($s)) | join("")) + (" " | rep($w - $v));
@@ -107,6 +111,7 @@ RENDER='
       + (if $mv then [seg("│ "; $bs) + seg("moved from " + $c.moved | trunc($iw); "1;33")] else [] end)
       + (if $c.state then [seg("│ "; $bs) + seg("⚑ " + $c.state + (if ($c.detail // "") != "" then " - " + $c.detail else "" end) | trunc($iw); $c.state | state_style)] else [] end)
       + (if $c.note then [seg("│ "; $bs) + seg($c.note | trunc($iw); "1;35")] else [] end)
+      + (if $c.dir then [seg("│ "; $bs) + seg($c.dir | ltrunc($iw); "2")] else [] end)
       + (if $c.pr then [$c.pr | chunks($iw)[] | seg("│ "; $bs) + seg(.; "4;34")] else [] end)
       + [seg("╰" + ("─" | rep($w - 1)); $bs)];
 
@@ -147,7 +152,8 @@ RENDER='
     state: ($t.current_state.state // "unknown"),
     detail: ($t.current_state.detail // ""),
     note: $note,
-    pr: $t.pr.url
+    pr: $t.pr.url,
+    dir: (($t.paths.worktree.path // "") | if . == "" then null else tilde end)
   };
   def record_card($r; $note): {
     id: ($r.id // "note"),
